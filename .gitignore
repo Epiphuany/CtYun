@@ -1,0 +1,20 @@
+# Build results
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Rider
+.idea/
+
+# Logs
+logs/
+
+# Device code
+DeviceCode.txt
+
+# Publish
+publish/

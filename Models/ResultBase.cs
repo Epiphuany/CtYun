@@ -1,0 +1,18 @@
+﻿using System.Text.Json.Serialization;
+
+namespace CtYun.Models
+{
+    internal class ResultBase<T>
+    {
+        [JsonPropertyName("code")]
+        public int Code { get; set; }
+
+        [JsonPropertyName("msg")]
+        public string Msg { get; set; }
+
+        [JsonPropertyName("data")]
+        public T Data { get; set; }
+
+        public bool Success { get { return Code == 0; } }
+    }
+}
