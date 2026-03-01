@@ -2,7 +2,7 @@
 
 一个基于 .NET 8 WPF 开发的天翼云电脑自动保活工具，通过 WebSocket 连接维持云电脑在线状态。
 
-![界面预览](screenshot.png)
+![界面预览](https://github.com/Epiphuany/CtYun/blob/master/images/screenshot.png?raw=true)
 
 ## 功能特性
 
