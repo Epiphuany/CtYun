@@ -25,6 +25,15 @@ namespace CtYun
 
             // 加载现有日志
             LoadExistingLogs();
+
+            // 延迟设置密码框（等待 ViewModel 加载保存的凭据）
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (!string.IsNullOrEmpty(_viewModel.Password))
+                {
+                    txtPassword.Password = _viewModel.Password;
+                }
+            }, System.Windows.Threading.DispatcherPriority.Background);
         }
 
         private void LoadExistingLogs()
@@ -107,7 +116,10 @@ namespace CtYun
 
         private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
         {
-            _viewModel?.SetPassword(txtPassword.Password);
+            if (_viewModel != null && sender is PasswordBox pb)
+            {
+                _viewModel.Password = pb.Password;
+            }
         }
 
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

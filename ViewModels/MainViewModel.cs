@@ -20,6 +20,7 @@ namespace CtYun.ViewModels
     public class MainViewModel : INotifyPropertyChanged
     {
         private readonly Logger _logger = Logger.Instance;
+        private readonly ConfigService _configService = ConfigService.Instance;
         private CtYunApi _api;
         private CancellationTokenSource _globalCts;
         private List<Desktop> _activeDesktops = new();
@@ -96,6 +97,26 @@ namespace CtYun.ViewModels
             set { _isLoggedIn = value; OnPropertyChanged(); UpdateCanStart(); UpdateCanLogin(); }
         }
 
+        private bool _isPasswordVisible = false;
+        public bool IsPasswordVisible
+        {
+            get => _isPasswordVisible;
+            set { _isPasswordVisible = value; OnPropertyChanged(); OnPropertyChanged(nameof(PasswordToggleIcon)); }
+        }
+
+        public string PasswordToggleIcon => IsPasswordVisible ? "🙈" : "👁";
+
+        public string Password
+        {
+            get => _password;
+            set
+            {
+                _password = value;
+                OnPropertyChanged();
+                UpdateCanLogin();
+            }
+        }
+
         public bool CanLogin => !string.IsNullOrEmpty(Phone) && !string.IsNullOrEmpty(_password) && !IsLoggedIn;
         public bool CanStart => IsLoggedIn && !IsRunning;
 
@@ -105,16 +126,60 @@ namespace CtYun.ViewModels
         public ICommand StartCommand { get; }
         public ICommand StopCommand { get; }
         public ICommand ClearLogCommand { get; }
+        public ICommand TogglePasswordVisibilityCommand { get; }
 
         public MainViewModel()
         {
             LoadDeviceCode();
+            LoadSavedCredentials();
 
             LoginCommand = new RelayCommand(async () => await LoginAsync(), () => CanLogin);
             GetSmsCodeCommand = new RelayCommand(async () => await GetSmsCodeAsync(), () => !string.IsNullOrEmpty(Phone) && _api != null);
             StartCommand = new RelayCommand(async () => await StartKeepAliveAsync(), () => CanStart);
             StopCommand = new RelayCommand(StopKeepAlive, () => IsRunning);
             ClearLogCommand = new RelayCommand(ClearLog);
+            TogglePasswordVisibilityCommand = new RelayCommand(() => IsPasswordVisible = !IsPasswordVisible);
+        }
+
+        private void LoadSavedCredentials()
+        {
+            try
+            {
+                var (phone, password) = _configService.LoadCredentials();
+                if (!string.IsNullOrEmpty(phone))
+                {
+                    Phone = phone;
+                    _logger.Log("已加载保存的手机号", LogLevel.Info);
+                }
+                if (!string.IsNullOrEmpty(password))
+                {
+                    _password = password;
+                    _logger.Log("已加载保存的密码", LogLevel.Info);
+                    // 通知密码已加载，让界面更新
+                    OnPropertyChanged(nameof(CanLogin));
+                    (LoginCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Log($"加载保存的凭据失败: {ex.Message}", LogLevel.Error);
+            }
+        }
+
+        public void SaveCredentials()
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(Phone) && !string.IsNullOrEmpty(_password))
+                {
+                    _configService.SaveCredentials(Phone, _password);
+                    _logger.Log("凭据已保存", LogLevel.Success);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Log($"保存凭据失败: {ex.Message}", LogLevel.Error);
+            }
         }
 
         private void LoadDeviceCode()
@@ -216,6 +281,9 @@ namespace CtYun.ViewModels
                 }
 
                 _logger.Log($"登录成功，用户: {_api.LoginInfo.UserName}", LogLevel.Success);
+
+                // 保存凭据
+                SaveCredentials();
 
                 // 检查是否需要绑定设备
                 if (!_api.LoginInfo.BondedDevice)
