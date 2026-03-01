@@ -1,5 +1,6 @@
 using CtYun.Services;
 using CtYun.ViewModels;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -16,6 +17,13 @@ namespace CtYun
         public MainWindow()
         {
             InitializeComponent();
+
+            // 设置窗口标题和版本号（从程序集版本获取）
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            var versionString = $"v{version?.Major}.{version?.Minor}";
+            this.Title = $"天翼云电脑保活工具 {versionString}";
+            txtVersion.Text = versionString;
+
             _viewModel = new MainViewModel();
             DataContext = _viewModel;
 

@@ -1,4 +1,4 @@
-# CtYun 云电脑保活工具 v2.0
+# CtYun 云电脑保活工具 v2.1
 
 一个基于 .NET 8 WPF 开发的天翼云电脑自动保活工具，通过 WebSocket 连接维持云电脑在线状态。
 
@@ -8,18 +8,20 @@
 
 - **现代化 WPF 界面** - 无边框窗口设计，支持拖动和自定义按钮
 - **彩色日志显示** - 不同级别的日志显示不同颜色，自动滚动到最新
+- **凭据自动保存** - 手机号和密码加密保存，下次启动自动填入
+- **密码可见性切换** - 点击眼睛图标可显示/隐藏密码
 - **自动登录** - 支持账号密码登录，自动处理验证码识别
 - **设备绑定** - 自动处理新设备短信验证绑定
 - **云电脑管理** - 自动获取云电脑列表，检测运行状态
 - **自动保活** - 通过 WebSocket 连接自动重连，保持云电脑在线
 - **保活间隔自定义** - 可自定义设置保活间隔时间（秒）
 - **多设备支持** - 同时支持多台云电脑的保活任务
-- **日志文件记录** - 全部日志自动保存到文件
+- **日志文件记录** - 全部日志自动保存到文件（按天分割）
 
 ## 界面截图
 
 界面包含以下元素：
-- **登录配置区域**：手机号、密码、保活间隔、短信验证码、设备标识输入框
+- **登录配置区域**：手机号、密码（带眼睛图标）、保活间隔、短信验证码、设备标识输入框
 - **操作按钮**：登录、获取验证码、开始保活、停止、清空日志
 - **状态显示**：当前状态、云电脑数量
 - **日志区域**：彩色日志显示（类似终端风格），自动滚动到最新
@@ -31,31 +33,35 @@
 - **MVVM** - Model-View-ViewModel 架构模式
 - **WebSocket** - 实时通信
 - **RSA-OAEP** - 加密通信
+- **AES** - 凭据加密存储
 - **System.Text.Json** - JSON 序列化
 
 ## 项目结构
 
 ```
 CtYun/
-├── App.xaml                 # 应用程序资源
-├── App.xaml.cs             # 应用程序入口
-├── MainWindow.xaml         # 主界面
-├── MainWindow.xaml.cs      # 主界面代码（彩色日志处理）
-├── CtYun.csproj            # 项目文件
-├── CtYunApi.cs             # 天翼云 API 封装
-├── Encryption.cs           # RSA-OAEP 加密实现
+├── App.xaml                          # 应用程序资源
+├── App.xaml.cs                       # 应用程序入口
+├── MainWindow.xaml                   # 主界面
+├── MainWindow.xaml.cs                # 主界面代码（彩色日志处理）
+├── CtYun.csproj                      # 项目文件
+├── CtYunApi.cs                       # 天翼云 API 封装
+├── Encryption.cs                     # RSA-OAEP 加密实现
+├── Converters/
+│   └── BooleanToVisibilityConverter.cs  # 布尔转可见性转换器
 ├── Services/
-│   └── Logger.cs           # 日志服务（支持彩色日志）
+│   ├── Logger.cs                     # 日志服务（支持彩色日志）
+│   └── ConfigService.cs              # 配置服务（凭据加密保存）
 ├── ViewModels/
-│   └── MainViewModel.cs    # 主界面视图模型
-└── Models/                 # 数据模型
-    ├── ChallengeData.cs    # 登录挑战数据
-    ├── ClientInfo.cs       # 客户端信息/云电脑列表
-    ├── ConnectInfo.cs      # 连接信息
-    ├── LoginInfo.cs        # 登录信息
-    ├── ResultBase.cs       # API 响应基类
-    ├── SendInfo.cs         # WebSocket 消息结构
-    └── AppJsonSerializerContext.cs  # JSON 序列化上下文
+│   └── MainViewModel.cs              # 主界面视图模型
+└── Models/                           # 数据模型
+    ├── ChallengeData.cs              # 登录挑战数据
+    ├── ClientInfo.cs                 # 客户端信息/云电脑列表
+    ├── ConnectInfo.cs                # 连接信息
+    ├── LoginInfo.cs                  # 登录信息
+    ├── ResultBase.cs                 # API 响应基类
+    ├── SendInfo.cs                   # WebSocket 消息结构
+    └── AppJsonSerializerContext.cs   # JSON 序列化上下文
 ```
 
 ## 使用方法
@@ -80,8 +86,8 @@ dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=
 ### 2. 界面操作
 
 1. **输入账号信息**：
-   - 手机号：输入天翼云账号（手机号）
-   - 密码：输入登录密码
+   - 手机号：输入天翼云账号（手机号），自动保存下次自动填入
+   - 密码：输入登录密码，点击右侧 👁 图标可显示/隐藏密码，自动保存
    - 保活间隔：默认60秒，可自定义修改
    - 短信验证码：首次登录需要
 
@@ -94,6 +100,7 @@ dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=
    - 点击「登录」按钮
    - 如果设备未绑定，点击「获取验证码」获取短信验证码
    - 输入短信验证码后再次点击「登录」
+   - 登录成功后手机号和密码自动加密保存
 
 4. **开始保活**：
    - 登录成功后，点击「开始保活」按钮
@@ -106,7 +113,7 @@ dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=
 6. **日志查看**：
    - 界面下方实时显示彩色日志
    - 日志自动滚动到最新
-   - 完整日志保存在 `logs/CtYun_YYYYMMDD_HHMMSS.log` 文件中
+   - 完整日志保存在 `logs/CtYun_YYYYMMDD.log` 文件中（按天分割）
 
 ## 日志颜色说明
 
@@ -118,6 +125,12 @@ dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=
 | Error | 红色 | 错误信息 |
 | Success | 绿色 | 成功信息 |
 
+## 安全说明
+
+- **凭据加密**：手机号和密码使用 AES-256 加密存储在 `config/user.config`
+- **加密密钥**：密钥保存在 `config/key.bin`，每个设备不同
+- **设备标识**：设备码保存在 `DeviceCode.txt`，用于识别设备
+
 ## 工作原理
 
 1. **登录流程**
@@ -125,6 +138,7 @@ dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=
    - 使用 OCR 服务自动识别验证码
    - SHA256 加密密码进行登录
    - 新设备需要短信验证绑定
+   - 登录成功后自动保存凭据
 
 2. **保活机制**
    - 按设定间隔重新建立 WebSocket 连接
@@ -153,24 +167,32 @@ dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=
 2. **设备绑定**：每个设备码只需绑定一次，绑定信息保存在服务端
 3. **保活频率**：建议保持默认60秒，过短可能增加服务器负担
 4. **设备标识**：首次运行自动生成，保存在 `DeviceCode.txt` 文件中
-5. **日志文件**：日志文件保存在程序目录下的 `logs` 文件夹中
+5. **日志文件**：日志文件保存在程序目录下的 `logs` 文件夹中，按天分割
+6. **凭据安全**：凭据使用 AES 加密存储，但请勿在公共电脑上保存密码
 
 ## 版本历史
 
-- **v2.0** - 当前版本
+- **v2.1** - 当前版本
+  - 新增凭据自动保存功能（AES 加密）
+  - 新增密码可见性切换（眼睛图标）
+  - 日志文件按天分割
+  - 优化界面布局
+
+- **v2.0** - 历史版本
   - 全新 WPF 图形界面，无边框设计
   - 彩色日志显示，类似终端风格
   - 支持保活间隔自定义设置
   - 日志自动滚动到最新
   - 改进的设备码管理
-  
+
 - **v1.1.4** - 历史版本
   - 控制台应用程序
   - 基础保活功能
 
 ## 开发计划
 
-- [ ] 支持配置文件保存用户设置
+- [x] 支持配置文件保存用户设置
+- [x] 添加密码可见性切换
 - [ ] 添加系统托盘最小化功能
 - [ ] 支持开机自启动
 - [ ] 添加多账号管理
