@@ -4,7 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Windows.Media;
+using Brush = System.Windows.Media.Brush;
+using Brushes = System.Windows.Media.Brushes;
 
 namespace CtYun.Services
 {
@@ -120,16 +121,16 @@ namespace CtYun.Services
             }
         }
 
-        private static Brush GetColorForLevel(LogLevel level)
+        private static System.Windows.Media.Brush GetColorForLevel(LogLevel level)
         {
             return level switch
             {
-                LogLevel.Debug => Brushes.Gray,
-                LogLevel.Info => Brushes.LightGray,
-                LogLevel.Warning => Brushes.Orange,
-                LogLevel.Error => Brushes.Red,
-                LogLevel.Success => Brushes.LimeGreen,
-                _ => Brushes.LightGray
+                LogLevel.Debug => System.Windows.Media.Brushes.Gray,
+                LogLevel.Info => System.Windows.Media.Brushes.LightGray,
+                LogLevel.Warning => System.Windows.Media.Brushes.Orange,
+                LogLevel.Error => System.Windows.Media.Brushes.Red,
+                LogLevel.Success => System.Windows.Media.Brushes.LimeGreen,
+                _ => System.Windows.Media.Brushes.LightGray
             };
         }
     }
@@ -139,7 +140,7 @@ namespace CtYun.Services
         public string Timestamp { get; set; }
         public LogLevel Level { get; set; }
         public string Message { get; set; }
-        public Brush Color { get; set; }
+        public System.Windows.Media.Brush Color { get; set; }
     }
 
     public enum LogLevel

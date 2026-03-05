@@ -5,7 +5,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
+using System.Windows.Forms;
+using Brushes = System.Windows.Media.Brushes;
 
 namespace CtYun
 {
@@ -13,6 +14,8 @@ namespace CtYun
     {
         private MainViewModel _viewModel;
         private readonly Logger _logger = Logger.Instance;
+        private NotifyIcon _notifyIcon;
+        private bool _isClosing = false;
 
         public MainWindow()
         {
@@ -42,6 +45,76 @@ namespace CtYun
                     txtPassword.Password = _viewModel.Password;
                 }
             }, System.Windows.Threading.DispatcherPriority.Background);
+
+            // 初始化系统托盘
+            InitializeNotifyIcon();
+        }
+
+        private void InitializeNotifyIcon()
+        {
+            _notifyIcon = new NotifyIcon();
+            _notifyIcon.Icon = new System.Drawing.Icon("images/ctyun.ico");
+            _notifyIcon.Text = "天翼云电脑保活工具";
+            _notifyIcon.Visible = true;
+
+            // 创建右键菜单
+            var contextMenu = new ContextMenuStrip();
+            var showItem = new ToolStripMenuItem("显示");
+            showItem.Click += (s, e) => ShowWindow();
+            
+            var exitItem = new ToolStripMenuItem("退出");
+            exitItem.Click += (s, e) => ExitApplication();
+
+            contextMenu.Items.Add(showItem);
+            contextMenu.Items.Add(new ToolStripSeparator());
+            contextMenu.Items.Add(exitItem);
+
+            _notifyIcon.ContextMenuStrip = contextMenu;
+
+            // 双击托盘图标显示窗口
+            _notifyIcon.DoubleClick += (s, e) => ShowWindow();
+        }
+
+        private void ShowWindow()
+        {
+            this.Show();
+            this.WindowState = WindowState.Normal;
+            this.Activate();
+        }
+
+        private void ExitApplication()
+        {
+            _isClosing = true;
+            _notifyIcon?.Dispose();
+            this.Close();
+        }
+
+        protected override void OnStateChanged(EventArgs e)
+        {
+            base.OnStateChanged(e);
+            
+            // 最小化时隐藏窗口
+            if (this.WindowState == WindowState.Minimized)
+            {
+                this.Hide();
+                _notifyIcon?.ShowBalloonTip(2000, "天翼云电脑保活工具", "程序已最小化到系统托盘", ToolTipIcon.Info);
+            }
+        }
+
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            if (!_isClosing)
+            {
+                // 不是真正的关闭，而是最小化到托盘
+                e.Cancel = true;
+                this.WindowState = WindowState.Minimized;
+            }
+            else
+            {
+                _notifyIcon?.Dispose();
+            }
+            
+            base.OnClosing(e);
         }
 
         private void LoadExistingLogs()
@@ -96,16 +169,16 @@ namespace CtYun
             }
         }
 
-        private static Brush GetLevelBrush(LogLevel level)
+        private static System.Windows.Media.Brush GetLevelBrush(LogLevel level)
         {
             return level switch
             {
-                LogLevel.Debug => Brushes.Gray,
-                LogLevel.Info => Brushes.Cyan,
-                LogLevel.Warning => Brushes.Orange,
-                LogLevel.Error => Brushes.Red,
-                LogLevel.Success => Brushes.LimeGreen,
-                _ => Brushes.LightGray
+                LogLevel.Debug => System.Windows.Media.Brushes.Gray,
+                LogLevel.Info => System.Windows.Media.Brushes.Cyan,
+                LogLevel.Warning => System.Windows.Media.Brushes.Orange,
+                LogLevel.Error => System.Windows.Media.Brushes.Red,
+                LogLevel.Success => System.Windows.Media.Brushes.LimeGreen,
+                _ => System.Windows.Media.Brushes.LightGray
             };
         }
 
@@ -145,7 +218,8 @@ namespace CtYun
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            // 点击关闭按钮时最小化到托盘，而不是真正关闭
+            this.WindowState = WindowState.Minimized;
         }
     }
 }

@@ -12,8 +12,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Threading;
+using Brushes = System.Windows.Media.Brushes;
+using Brush = System.Windows.Media.Brush;
 
 namespace CtYun.ViewModels
 {
@@ -69,8 +70,8 @@ namespace CtYun.ViewModels
             set { _statusText = value; OnPropertyChanged(); }
         }
 
-        private Brush _statusBrush = Brushes.Black;
-        public Brush StatusBrush
+        private System.Windows.Media.Brush _statusBrush = System.Windows.Media.Brushes.Black;
+        public System.Windows.Media.Brush StatusBrush
         {
             get => _statusBrush;
             set { _statusBrush = value; OnPropertyChanged(); }
