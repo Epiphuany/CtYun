@@ -1,4 +1,4 @@
-# CtYun 云电脑保活工具 v2.1
+# CtYun 云电脑保活工具 v2.2
 
 一个基于 .NET 8 WPF 开发的天翼云电脑自动保活工具，通过 WebSocket 连接维持云电脑在线状态。
 
@@ -10,6 +10,7 @@
 - **彩色日志显示** - 不同级别的日志显示不同颜色，自动滚动到最新
 - **凭据自动保存** - 手机号和密码加密保存，下次启动自动填入
 - **密码可见性切换** - 点击眼睛图标可显示/隐藏密码
+- **系统托盘最小化** - 点击关闭按钮最小化到系统托盘，双击托盘图标恢复
 - **自动登录** - 支持账号密码登录，自动处理验证码识别
 - **设备绑定** - 自动处理新设备短信验证绑定
 - **云电脑管理** - 自动获取云电脑列表，检测运行状态
@@ -30,6 +31,7 @@
 
 - **.NET 8** - 目标框架
 - **WPF** - Windows Presentation Foundation 界面框架
+- **Windows Forms** - 用于系统托盘功能
 - **MVVM** - Model-View-ViewModel 架构模式
 - **WebSocket** - 实时通信
 - **RSA-OAEP** - 加密通信
@@ -43,7 +45,7 @@ CtYun/
 ├── App.xaml                          # 应用程序资源
 ├── App.xaml.cs                       # 应用程序入口
 ├── MainWindow.xaml                   # 主界面
-├── MainWindow.xaml.cs                # 主界面代码（彩色日志处理）
+├── MainWindow.xaml.cs                # 主界面代码（彩色日志处理、系统托盘）
 ├── CtYun.csproj                      # 项目文件
 ├── CtYunApi.cs                       # 天翼云 API 封装
 ├── Encryption.cs                     # RSA-OAEP 加密实现
@@ -54,14 +56,17 @@ CtYun/
 │   └── ConfigService.cs              # 配置服务（凭据加密保存）
 ├── ViewModels/
 │   └── MainViewModel.cs              # 主界面视图模型
-└── Models/                           # 数据模型
-    ├── ChallengeData.cs              # 登录挑战数据
-    ├── ClientInfo.cs                 # 客户端信息/云电脑列表
-    ├── ConnectInfo.cs                # 连接信息
-    ├── LoginInfo.cs                  # 登录信息
-    ├── ResultBase.cs                 # API 响应基类
-    ├── SendInfo.cs                   # WebSocket 消息结构
-    └── AppJsonSerializerContext.cs   # JSON 序列化上下文
+├── Models/                           # 数据模型
+│   ├── ChallengeData.cs              # 登录挑战数据
+│   ├── ClientInfo.cs                 # 客户端信息/云电脑列表
+│   ├── ConnectInfo.cs                # 连接信息
+│   ├── LoginInfo.cs                  # 登录信息
+│   ├── ResultBase.cs                 # API 响应基类
+│   ├── SendInfo.cs                   # WebSocket 消息结构
+│   └── AppJsonSerializerContext.cs   # JSON 序列化上下文
+└── images/
+    ├── ctyun.ico                     # 程序图标
+    └── screenshot.png                # 截图
 ```
 
 ## 使用方法
@@ -107,10 +112,16 @@ dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=
    - 程序会自动连接所有运行中的云电脑
    - 每N秒（自定义间隔）自动重连保持在线
 
-5. **停止保活**：
+5. **系统托盘**：
+   - 点击窗口「✕」关闭按钮 → 最小化到系统托盘
+   - 双击托盘图标 → 显示主窗口
+   - 右键托盘图标 → 显示菜单（显示 / 退出）
+   - 最小化时显示气泡提示
+
+6. **停止保活**：
    - 点击「停止」按钮终止保活任务
 
-6. **日志查看**：
+7. **日志查看**：
    - 界面下方实时显示彩色日志
    - 日志自动滚动到最新
    - 完整日志保存在 `logs/CtYun_YYYYMMDD.log` 文件中（按天分割）
@@ -172,7 +183,13 @@ dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=
 
 ## 版本历史
 
-- **v2.1** - 当前版本
+- **v2.2** - 当前版本
+  - 新增系统托盘最小化功能
+  - 添加程序图标
+  - 点击关闭按钮最小化到托盘（而非退出）
+  - 托盘右键菜单支持显示/退出
+
+- **v2.1** - 历史版本
   - 新增凭据自动保存功能（AES 加密）
   - 新增密码可见性切换（眼睛图标）
   - 日志文件按天分割
@@ -193,7 +210,7 @@ dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=
 
 - [x] 支持配置文件保存用户设置
 - [x] 添加密码可见性切换
-- [ ] 添加系统托盘最小化功能
+- [x] 添加系统托盘最小化功能
 - [ ] 支持开机自启动
 - [ ] 添加多账号管理
 - [ ] 支持定时任务

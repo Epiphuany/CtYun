@@ -5,7 +5,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Forms;
 using Brushes = System.Windows.Media.Brushes;
 
 namespace CtYun
