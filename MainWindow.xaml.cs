@@ -1,5 +1,6 @@
 using CtYun.Services;
 using CtYun.ViewModels;
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -52,7 +53,18 @@ namespace CtYun
         private void InitializeNotifyIcon()
         {
             _notifyIcon = new NotifyIcon();
-            _notifyIcon.Icon = new System.Drawing.Icon("images/ctyun.ico");
+            
+            // 从嵌入式资源加载图标
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = "CtYun.images.ctyun.ico";
+            using (var stream = assembly.GetManifestResourceStream(resourceName))
+            {
+                if (stream != null)
+                {
+                    _notifyIcon.Icon = new System.Drawing.Icon(stream);
+                }
+            }
+            
             _notifyIcon.Text = "天翼云电脑保活工具";
             _notifyIcon.Visible = true;
 
@@ -70,8 +82,8 @@ namespace CtYun
 
             _notifyIcon.ContextMenuStrip = contextMenu;
 
-            // 双击托盘图标显示窗口
-            _notifyIcon.DoubleClick += (s, e) => ShowWindow();
+            // 单击托盘图标显示窗口
+            _notifyIcon.Click += (s, e) => ShowWindow();
         }
 
         private void ShowWindow()

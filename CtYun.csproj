@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Resource Include="images\ctyun.ico" />
+    <EmbeddedResource Include="images\ctyun.ico" />
   </ItemGroup>
 
 </Project>
